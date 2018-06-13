@@ -5,6 +5,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
+import java.util.UUID;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
@@ -121,11 +122,14 @@ public class UsuarioResource {
 			session.setDebug(true);
 			
 			try {
+				
+				String senha = UUID.randomUUID().toString().substring(0, 6);
+				
 				Message message = new MimeMessage(session);
 				message.setFrom(new InternetAddress(username));
 				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(username));
 				message.setSubject("Testing Subject");
-				message.setText("Dear Mail Crawler, \n\n No spam to my email, please!");
+				message.setText("Sua nova senha é: " + senha);
 				
 				Transport.send(message);
 				System.out.println("Done");
