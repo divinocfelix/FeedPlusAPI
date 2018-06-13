@@ -18,7 +18,7 @@ public class LojaResource {
 	private static Map<Long, Loja> mapa = new HashMap<Long, Loja>();
 	
 	public LojaResource() {
-		
+		this.populaLojas();
 	}
 	
 	@GET
