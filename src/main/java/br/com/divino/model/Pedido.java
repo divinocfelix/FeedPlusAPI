@@ -2,6 +2,7 @@ package br.com.divino.model;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -10,6 +11,7 @@ public class Pedido implements Serializable {
 	private Long id;
 	private String codigo;
 	private Date data;
+	private Loja loja;
 	private Usuario usuario;
 	private BigDecimal total;
 	private List<Item> itens;
@@ -31,6 +33,12 @@ public class Pedido implements Serializable {
 	public void setData(Date data) {
 		this.data = data;
 	}
+	public Loja getLoja() {
+		return loja;
+	}
+	public void setLoja(Loja loja) {
+		this.loja = loja;
+	}
 	public Usuario getUsuario() {
 		return usuario;
 	}
@@ -44,6 +52,9 @@ public class Pedido implements Serializable {
 		this.total = total;
 	}
 	public List<Item> getItens() {
+		if(itens == null) {
+			itens = new ArrayList<Item>();
+		}
 		return itens;
 	}
 	public void setItens(List<Item> itens) {
@@ -56,6 +67,7 @@ public class Pedido implements Serializable {
 		result = prime * result + ((codigo == null) ? 0 : codigo.hashCode());
 		result = prime * result + ((data == null) ? 0 : data.hashCode());
 		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((loja == null) ? 0 : loja.hashCode());
 		result = prime * result + ((usuario == null) ? 0 : usuario.hashCode());
 		return result;
 	}
@@ -83,6 +95,11 @@ public class Pedido implements Serializable {
 				return false;
 		} else if (!id.equals(other.id))
 			return false;
+		if (loja == null) {
+			if (other.loja != null)
+				return false;
+		} else if (!loja.equals(other.loja))
+			return false;
 		if (usuario == null) {
 			if (other.usuario != null)
 				return false;
@@ -90,7 +107,4 @@ public class Pedido implements Serializable {
 			return false;
 		return true;
 	}
-	
-	
-	
 }

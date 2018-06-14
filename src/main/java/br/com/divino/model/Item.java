@@ -8,10 +8,11 @@ public class Item implements Serializable {
 	private Long id;
 	private String codigo;
 	private String descricao;
-	private Unidade unidade;
+	private String unidade;
 	private BigDecimal preco;
 	private Double quantidade;
 	private String foto;
+	private String marca;
 	
 	public Long getId() {
 		return id;
@@ -31,10 +32,10 @@ public class Item implements Serializable {
 	public void setDescricao(String descricao) {
 		this.descricao = descricao;
 	}
-	public Unidade getUnidade() {
+	public String getUnidade() {
 		return unidade;
 	}
-	public void setUnidade(Unidade unidade) {
+	public void setUnidade(String unidade) {
 		this.unidade = unidade;
 	}
 	public BigDecimal getPreco() {
@@ -55,6 +56,12 @@ public class Item implements Serializable {
 	public void setFoto(String foto) {
 		this.foto = foto;
 	}
+	public String getMarca() {
+		return marca;
+	}
+	public void setMarca(String marca) {
+		this.marca = marca;
+	}
 	
-	
+		
 }

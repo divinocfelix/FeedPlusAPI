@@ -1,7 +1,6 @@
 package br.com.divino.rest;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -9,7 +8,6 @@ import java.util.UUID;
 
 import javax.mail.Authenticator;
 import javax.mail.Message;
-import javax.mail.MessagingException;
 import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.Transport;
@@ -26,6 +24,14 @@ import br.com.divino.model.Usuario;
 @Path("/usuario")
 public class UsuarioResource {
 	
+	private final String EMAIL = "feedplusapi@gmail.com";
+	private final String SENHA = "feed12345";
+	private final String TITULO = "FeedPlus - Nova senha";
+	private final String TEXTO = "Sua nova senha é: ";
+	private final String SMTP_SERVER = "smtp.gmail.com";
+	private final String SMTP_PORT = "587";
+	private final String PROTOCOLO = "smtp";
+		
 	private static Map<String, Usuario> mapa = new HashMap<String, Usuario>();
 	private Usuario admim;
 	private Long id = 0L;
@@ -87,63 +93,77 @@ public class UsuarioResource {
 		return resposta;
 	}
 	
-	@Path("/criarNovaSenha")
 	@POST
-	public Response criarNovaSenha(String email) {
+	@Path("/criarNovaSenha")
+	public Response criarNovaSenha(String destino) {
 		Response resposta = null;
-		email = this.trataCampoEmail(email);
+		destino = this.trataCampoEmail(destino);
 		
-		if(this.mapa.containsKey(email)) {
-			String username = "71001697@aluno.faculdadecotemig.br";
-			String password = "divs12345";
-
-			Properties props = new Properties();
-			props.put("mail.smtp.host", "smtp.gmail.com");
-			props.put("mail.smtp.auth", "true");
-			props.put("mail.smtp.port", "465");
-			props.put("mail.smtp.starttls.enable", "false");
-			props.put("mail.smtp.socketFactory.fallback", "false");
-			props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
-			
-			/*
-			props.put("mail.smtp.ssl.trust", "smtp.gmail.com");
-			props.put("mail.smtp.debug", "true");
-			props.put("mail.smtp.socketFactory.port", "465");
-			props.put("mail.transport.protocol", "smtps");
-			*/
-			
-			Session session = Session.getInstance(props,
-				new javax.mail.Authenticator() {
-					protected PasswordAuthentication getPasswordAuthentication() {
-						return new PasswordAuthentication(username, password);
-					}
-				}
-			);
-			session.setDebug(true);
-			
+		if(this.mapa.containsKey(destino)) {
 			try {
+				String senha = this.gerarNovaSenha(5);
+				Properties props = this.criarEmailProperties();
+				Authenticator authenticator = this.criarAutentication();
 				
-				String senha = UUID.randomUUID().toString().substring(0, 6);
+				Session session = Session.getDefaultInstance(props, authenticator);
+				session.setDebug(true);
 				
 				Message message = new MimeMessage(session);
-				message.setFrom(new InternetAddress(username));
-				message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(username));
-				message.setSubject("Testing Subject");
-				message.setText("Sua nova senha é: " + senha);
 				
-				Transport.send(message);
-				System.out.println("Done");
+				message.setRecipient(Message.RecipientType.TO, new InternetAddress(destino));
+				message.setFrom(new InternetAddress(EMAIL));
+				message.setSubject(TITULO);
+				message.setContent(TEXTO + senha, MediaType.TEXT_HTML);
 				
-			} catch (MessagingException e) {
+				Transport transport = session.getTransport(PROTOCOLO);
+				transport.connect(SMTP_SERVER, EMAIL, SENHA);
+				message.saveChanges();
+				transport.sendMessage(message, message.getAllRecipients());
+				transport.close();
+				
+				resposta = Response.ok().build();
+				
+			} catch (Exception e) {
 				resposta = this.criarResposta(MediaType.APPLICATION_JSON, 500, null);
 			}
 			
-			resposta = Response.ok().build();
 		} else {
 			resposta = this.criarResposta(MediaType.APPLICATION_JSON, 404, null);
 		}
 		
 		return resposta;
+	}
+
+	private Authenticator criarAutentication() {
+		Authenticator authenticator = new Authenticator() {
+			@Override
+			protected PasswordAuthentication getPasswordAuthentication() {
+				return new PasswordAuthentication(EMAIL, SENHA);
+			}
+		};
+		return authenticator;
+	}
+
+	private Properties criarEmailProperties() {
+		Properties props = new Properties();
+		
+		props.put("mail.transport.protocol", PROTOCOLO);
+		props.put("mail.smtp.starttls.enable", "true");
+		props.put("mail.smtp.host", SMTP_SERVER);
+		props.put("mail.smtp.auth", "true");
+		props.put("mail.smtp.user", EMAIL);
+		props.put("mail.debug", "true");
+		props.put("mail.smtp.port", SMTP_PORT);
+		props.put("mail.smtp.socketFactory.port", SMTP_PORT);
+		props.put("mail.smtp.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
+		props.put("mail.smtp.socketFactory.fallback", "false");
+		props.put("mail.smtp.socketFactory.port", "465");
+		props.put("mail.smtp.port", "465");
+		return props;
+	}
+
+	private String gerarNovaSenha(int tamanho) {
+		return UUID.randomUUID().toString().substring(0, tamanho);
 	}
 	
 	private Response criarResposta(String tipo, int status, Serializable entidade) {
