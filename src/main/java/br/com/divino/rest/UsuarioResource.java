@@ -32,7 +32,7 @@ public class UsuarioResource {
 	private final String SMTP_PORT = "587";
 	private final String PROTOCOLO = "smtp";
 		
-	private static Map<String, Usuario> mapa = new HashMap<String, Usuario>();
+	private static Map<String, Usuario> mapaUsuarios = new HashMap<String, Usuario>();
 	private Usuario admim;
 	private Long id = 0L;
 	
@@ -79,12 +79,12 @@ public class UsuarioResource {
 	
 	@Path("/emailValido")
 	@POST
-	public Response recuperarSenha(String email) {
+	public Response emailValido(String email) {
 		Response resposta = null;
 		
 		email = this.trataCampoEmail(email);
 				
-		if(this.mapa.containsKey(email)) {		
+		if(this.mapaUsuarios.containsKey(email)) {		
 			resposta = Response.ok().build();
 		} else {
 			resposta = this.criarResposta(MediaType.APPLICATION_JSON, 404, null);
@@ -99,7 +99,7 @@ public class UsuarioResource {
 		Response resposta = null;
 		destino = this.trataCampoEmail(destino);
 		
-		if(this.mapa.containsKey(destino)) {
+		if(this.mapaUsuarios.containsKey(destino)) {
 			try {
 				String senha = this.gerarNovaSenha(5);
 				Properties props = this.criarEmailProperties();
@@ -120,6 +120,9 @@ public class UsuarioResource {
 				message.saveChanges();
 				transport.sendMessage(message, message.getAllRecipients());
 				transport.close();
+				
+				Usuario user = this.mapaUsuarios.get(destino);
+				user.setSenha(senha);
 				
 				resposta = Response.ok().build();
 				
@@ -199,7 +202,7 @@ public class UsuarioResource {
 	}
 	
 	private void addUsuario(Usuario user) {
-		this.mapa.put(user.getEmail(), user);
+		this.mapaUsuarios.put(user.getEmail(), user);
 	}
 	
 	private String trataCampoEmail(String email) {
